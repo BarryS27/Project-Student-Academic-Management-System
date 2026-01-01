@@ -53,3 +53,19 @@ Clone the repository and install the required dependencies:
 ```bash
 # Install dependencies from requirements.txt
 pip install -r requirements.txt
+
+### 2. Run the Application
+Once dependencies are installed, start the system by running:
+
+```bash
+python main.py
+
+.
+├── main.py           # 🚀 Entry Point: Initializes the Controller
+├── core.py           # 🧠 Model: Handles Data Logic & CSV CRUD operations
+├── ui.py             # 🖥️ View: Handles User Interaction & Menu rendering
+├── viz.py            # 🎨 Visualization: Generates Seaborn/Matplotlib charts
+├── config.py         # ⚙️ Configuration: File paths & Column definitions
+├── requirements.txt  # 📦 Dependencies list
+├── .gitignore        # 🔒 Privacy: Excludes personal CSV data from Git
+└── README.md         # 📖 Documentation
