@@ -1,7 +1,3 @@
-🤝 Code of Conduct
-
----
-
 🌱 Our Pledge
 
 We are committed to creating a welcoming, respectful, and harassment-free
