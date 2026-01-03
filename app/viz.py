@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.patheffects as pe
 import pandas as pd
 from math import pi
 
@@ -10,16 +11,16 @@ except ImportError:
     SCIPY_AVAILABLE = False
 
 THEME = {
-    'bg_main': '#1C1C1E',
-    'bg_card': '#2C2C2E',
-    'text_white': '#F2F2F7',
-    'text_gray': '#8E8E93',
-    'grid': '#3A3A3C',
-    'cyan': '#64D2FF',
-    'green': '#30D158',
-    'orange': '#FF9F0A',
-    'purple': '#BF5AF2',
-    'red': '#FF453A',
+    'bg_main': '#0D1117',
+    'bg_card': '#161B22',
+    'text_white': '#E6EDF3',
+    'text_gray': '#848D97',
+    'grid': '#21262D',
+    'cyan': '#2F81F7',
+    'green': '#3FB950',
+    'orange': '#D29922',
+    'purple': '#A371F7',
+    'red': '#F85149',
 }
 
 def _setup_style():
@@ -31,13 +32,13 @@ def _setup_style():
         'xtick.color': THEME['text_gray'],
         'ytick.color': THEME['text_gray'],
         'grid.color': THEME['grid'],
-        'grid.linestyle': '-',
+        'grid.linestyle': '--',
         'grid.linewidth': 0.8,
         'grid.alpha': 0.3,
         'text.color': THEME['text_white'],
         'font.family': 'sans-serif',
-        'font.sans-serif': ['Helvetica', 'Arial', 'DejaVu Sans'],
-        'figure.dpi': 120
+        'font.sans-serif': ['SF Pro Display', 'Helvetica Neue', 'Arial', 'sans-serif'], 
+        'figure.dpi': 140
     })
 
 def _calculate_total(df):
@@ -61,16 +62,23 @@ def plot_subject_breakdown(df, grade_name):
     y_pos = np.arange(len(df))
     scores = df['Total_Score'].values
     courses = df['Code'].values
+    max_score = max(scores) * 1.15
 
-    ax.barh(y_pos, [max(scores)*1.1]*len(y_pos), height=0.2, color=THEME['bg_card'], align='center')
+    ax.hlines(y=y_pos, xmin=0, xmax=max_score, 
+              color=THEME['bg_card'], linewidth=12, capstyle='round')
 
-    bars = ax.barh(y_pos, scores, height=0.2, color=THEME['cyan'], alpha=1.0, align='center')
-
-    ax.barh(y_pos, scores, height=0.4, color=THEME['cyan'], alpha=0.2, align='center')
+    lines = ax.hlines(y=y_pos, xmin=0, xmax=scores, 
+                      color=THEME['cyan'], linewidth=12, capstyle='round')
+    
+    lines.set_path_effects([
+        pe.Stroke(linewidth=20, foreground=THEME['cyan'], alpha=0.15),
+        pe.Normal()
+    ])
 
     ax.set_yticks(y_pos)
     ax.set_yticklabels(courses, fontsize=11, fontweight='bold')
-    ax.set_xlabel('TOTAL POINTS', fontsize=9, letterspacing=2) # letterspacing 增加工业感
+    ax.set_xlabel('TOTAL POINTS', fontsize=9, letterspacing=2, fontweight='bold')
+    ax.set_xlim(0, max_score)
     
     for spine in ax.spines.values():
         spine.set_visible(False)
@@ -79,9 +87,10 @@ def plot_subject_breakdown(df, grade_name):
     ax.grid(axis='y', visible=False)
 
     for i, v in enumerate(scores):
-        ax.text(v + 2, i, str(int(v)), color=THEME['text_white'], va='center', fontsize=10, fontweight='bold')
+        ax.text(v + (max_score*0.02), i, str(int(v)), 
+                color=THEME['text_white'], va='center', fontsize=10, fontweight='bold')
 
-    plt.title(f"{grade_name} // PERFORMANCE MATRIX", fontsize=14, fontweight='bold', color=THEME['text_gray'], loc='left', pad=20)
+    plt.title(f"{grade_name} // PERFORMANCE", fontsize=16, fontweight='bold', color=THEME['text_white'], loc='left', pad=25)
     plt.tight_layout()
     plt.show()
 
@@ -123,26 +132,30 @@ def plot_gpa_trend(full_df, selected_subjects):
         else:
             x_new, y_smooth = x, y
 
-        ax.plot(x_new, y_smooth, color=line_color, linewidth=6, alpha=0.15)
-        ax.plot(x_new, y_smooth, color=line_color, linewidth=10, alpha=0.05)
+        line, = ax.plot(x_new, y_smooth, color=line_color, linewidth=2.5, label=code)
         
-        ax.plot(x_new, y_smooth, color=line_color, linewidth=2, alpha=1.0, label=code)
+        line.set_path_effects([
+            pe.Stroke(linewidth=12, foreground=line_color, alpha=0.1),
+            pe.Stroke(linewidth=6, foreground=line_color, alpha=0.3),
+            pe.Normal()
+        ])
 
-        ax.scatter(x, y, color=THEME['bg_main'], edgecolor=line_color, s=50, linewidth=2, zorder=10)
+        scatter = ax.scatter(x, y, color=THEME['bg_main'], edgecolor=line_color, s=60, linewidth=2, zorder=10)
+        scatter.set_path_effects([pe.Stroke(linewidth=5, foreground=line_color, alpha=0.3), pe.Normal()])
 
     if not plotted_any: return
 
     ax.set_xticks([1, 2, 3, 4])
-    ax.set_xticklabels(['G9', 'G10', 'G11', 'G12'], fontweight='bold')
+    ax.set_xticklabels(['G9', 'G10', 'G11', 'G12'], fontweight='bold', fontsize=11)
     ax.set_xlim(0.8, 4.2)
     
     for spine in ax.spines.values():
         spine.set_visible(False)
         
-    ax.grid(axis='y', linestyle='-', alpha=0.15, color='white')
+    ax.grid(axis='y', linestyle='--', alpha=0.15, color=THEME['grid'])
     ax.grid(axis='x', visible=False)
     
-    plt.title("ACADEMIC TRAJECTORY // TREND", fontsize=14, fontweight='bold', color=THEME['text_gray'], loc='left', pad=20)
+    plt.title("ACADEMIC TRAJECTORY", fontsize=16, fontweight='bold', color=THEME['text_white'], loc='left', pad=25)
     
     legend = plt.legend(frameon=False, labelcolor=THEME['text_gray'], loc='upper left')
     
@@ -151,19 +164,14 @@ def plot_gpa_trend(full_df, selected_subjects):
 
 def plot_radar_distribution(df, grade_name):
     _setup_style()
-    
     if df.empty: return
-    
     df = df.copy()
     df['Total_Score'] = _calculate_total(df)
     df = df[df['Total_Score'] > 0]
-    
-    if len(df) > 6:
-        df = df.sort_values('Total_Score', ascending=False).head(6)
+    if len(df) > 6: df = df.sort_values('Total_Score', ascending=False).head(6)
         
     categories = df['Code'].tolist()
     values = df['Total_Score'].tolist()
-    
     if not categories: return
 
     N = len(categories)
@@ -172,25 +180,25 @@ def plot_radar_distribution(df, grade_name):
     angles += angles[:1]
 
     fig, ax = plt.subplots(figsize=(8, 8), subplot_kw=dict(polar=True))
-    
     ax.set_facecolor(THEME['bg_main'])
     fig.patch.set_facecolor(THEME['bg_main'])
 
-    ax.plot(angles, values, color=THEME['green'], linewidth=2, linestyle='-')
+    line, = ax.plot(angles, values, color=THEME['green'], linewidth=2.5, linestyle='-')
+    line.set_path_effects([
+        pe.Stroke(linewidth=10, foreground=THEME['green'], alpha=0.15),
+        pe.Normal()
+    ])
+    
     ax.fill(angles, values, color=THEME['green'], alpha=0.15)
     
-    ax.yaxis.grid(True, color=THEME['grid'], linestyle='--', alpha=0.3)
-    ax.xaxis.grid(True, color=THEME['grid'], linestyle='-', alpha=0.3)
-    
-    ax.spines['polar'].set_color(THEME['grid'])
-    ax.spines['polar'].set_alpha(0.3)
+    ax.yaxis.grid(True, color=THEME['grid'], linestyle='--', alpha=0.4)
+    ax.xaxis.grid(True, color=THEME['grid'], linestyle='-', alpha=0.4)
+    ax.spines['polar'].set_visible(False)
 
     ax.set_xticks(angles[:-1])
-    ax.set_xticklabels(categories, fontsize=12, fontweight='bold', color=THEME['text_white'])
-    
+    ax.set_xticklabels(categories, fontsize=11, fontweight='bold', color=THEME['text_white'])
     ax.set_yticklabels([]) 
     
-    plt.title(f"SKILL RADAR // {grade_name}", fontsize=14, fontweight='bold', color=THEME['text_gray'], pad=30)
-    
+    plt.title(f"SKILL RADAR // {grade_name}", fontsize=16, fontweight='bold', color=THEME['text_gray'], pad=40)
     plt.tight_layout()
     plt.show()
